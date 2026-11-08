@@ -271,8 +271,34 @@ private fun ShortsPage(shorts: List<Video>, onPlay: (Video) -> Unit) {
 @Composable
 private fun PlayerPage(video: Video, speed: Float, onSpeed: (Float) -> Unit, onBack: () -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    val player = remember(video.url) { ExoPlayer.Builder(context).build().apply { setMediaItem(MediaItem.fromUri(video.url)); prepare(); playWhenReady = true; setPlaybackParameters(PlaybackParameters(speed)) } }
-    DisposableEffect(player) { onDispose { player.release() } }
+    var controller by remember { mutableStateOf<androidx.media3.session.MediaController?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+    val controllerFuture = remember {
+        val token = androidx.media3.session.SessionToken(
+            context,
+            android.content.ComponentName(context, com.yourtube.android.playback.YourTubePlaybackService::class.java)
+        )
+        androidx.media3.session.MediaController.Builder(context, token).buildAsync()
+    }
+
+    DisposableEffect(controllerFuture) {
+        controllerFuture.addListener({
+            try {
+                val mediaController = controllerFuture.get()
+                mediaController.setMediaItem(MediaItem.fromUri(video.url))
+                mediaController.prepare()
+                mediaController.playWhenReady = true
+                mediaController.setPlaybackParameters(PlaybackParameters(speed))
+                controller = mediaController
+            } catch (t: Throwable) {
+                error = t.message ?: "Unable to connect to playback service"
+            }
+        }, java.util.concurrent.Executor { command -> command.run() })
+        onDispose {
+            androidx.media3.session.MediaController.releaseFuture(controllerFuture)
+        }
+    }
+
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Back") }
@@ -282,20 +308,35 @@ private fun PlayerPage(video: Video, speed: Float, onSpeed: (Float) -> Unit, onB
                 TextButton(onClick = { menu = true }) { Text("${speed}x", color = Accent) }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                     listOf(.5f, .75f, 1f, 1.25f, 1.5f, 2f).forEach { value ->
-                        DropdownMenuItem(text = { Text("${value}x") }, onClick = { menu = false; onSpeed(value); player.setPlaybackParameters(PlaybackParameters(value)) })
+                        DropdownMenuItem(text = { Text("${value}x") }, onClick = {
+                            menu = false
+                            onSpeed(value)
+                            controller?.setPlaybackParameters(PlaybackParameters(value))
+                        })
                     }
                 }
             }
         }
-        AndroidView(factory = { PlayerView(it).apply { this.player = player; useController = true; setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING) } },
-            modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f))
+        val activeController = controller
+        if (activeController != null) {
+            AndroidView(
+                factory = { PlayerView(it).apply { player = activeController; useController = true; setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING) } },
+                update = { it.player = activeController },
+                modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f)
+            )
+        } else {
+            Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f).background(Color.Black), contentAlignment = Alignment.Center) {
+                if (error != null) Text(error!!, color = Color.White)
+                else CircularProgressIndicator(color = Accent)
+            }
+        }
         Text(video.title, fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
         Text(video.creator + " • " + video.description, color = Subtle, modifier = Modifier.padding(horizontal = 16.dp))
         Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            AssistChip(onClick = { player.seekBack() }, label = { Text("−10 sec") }, leadingIcon = { Icon(Icons.Default.Replay10, null) })
-            AssistChip(onClick = { player.seekForward() }, label = { Text("+10 sec") }, leadingIcon = { Icon(Icons.Default.Forward10, null) })
+            AssistChip(onClick = { controller?.seekBack() }, label = { Text("−10 sec") }, leadingIcon = { Icon(Icons.Default.Replay10, null) })
+            AssistChip(onClick = { controller?.seekForward() }, label = { Text("+10 sec") }, leadingIcon = { Icon(Icons.Default.Forward10, null) })
         }
-        Text("Direct media playback • playback speed control • Media3", color = Subtle, fontSize = 12.sp, modifier = Modifier.padding(16.dp))
+        Text("MediaSession playback • notification and lock-screen controls • speed control", color = Subtle, fontSize = 12.sp, modifier = Modifier.padding(16.dp))
     }
 }
 
