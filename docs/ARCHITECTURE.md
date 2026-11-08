@@ -6,6 +6,13 @@
 - Primary quality attribute: performance and reliability on entry-level Android devices, including limited-RAM devices.
 - Non-goals: DRM circumvention, extracting protected YouTube media streams, bypassing access controls, or unauthorized downloads.
 
+## Product model: standalone ReVanced-inspired client
+- YourTube is a separate Android application with its own UI, navigation, playback controls, settings, and feature system; it does not patch, modify, repackage, or inject code into the installed YouTube app.
+- ReVanced-inspired capabilities are product goals, not a promise of compatibility with every YouTube feature: background playback, SponsorBlock integration where supported, playback gestures/speed, themes, Shorts-style browsing, and configurable controls.
+- YouTube content discovery and playback must use integrations and methods permitted for the intended distribution channel. Do not assume that a third-party extractor or undocumented internal endpoint is stable, officially supported, or permitted.
+- Keep source adapters replaceable so an unsupported or changed upstream integration can be disabled without breaking direct-media playback or the rest of the app.
+- Do not implement DRM circumvention, access-control bypass, or unauthorized downloading. Do not copy NewPipe or ReVanced code without separately satisfying its applicable license and distribution obligations.
+
 ## Architecture principles
 1. Single app, layered packages first. Avoid premature multi-module complexity until build stability and app size justify it.
 2. Unidirectional UI state. Compose screens render immutable screen state and send intents to ViewModels. No network, disk, or player work on the main thread.
