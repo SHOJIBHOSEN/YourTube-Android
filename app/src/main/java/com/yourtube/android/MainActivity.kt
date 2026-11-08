@@ -1,5 +1,7 @@
 package com.yourtube.android
 
+import com.yourtube.android.core.media.MediaUrlValidator
+
 import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
@@ -254,16 +256,7 @@ private fun Empty(title: String, message: String) {
         Text(message, color = MUTED, fontSize = 12.sp)
     }
 }
-private fun isSupportedDirectMediaUrl(raw: String): Boolean {
-    return try {
-        val uri = Uri.parse(raw.trim())
-        val extension = uri.lastPathSegment.orEmpty().substringAfterLast('.', "").lowercase()
-        (uri.scheme == "https" || uri.scheme == "http") &&
-            extension in setOf("mp4", "m4v", "webm", "m3u8", "mpd")
-    } catch (_: Exception) {
-        false
-    }
-}
+private fun isSupportedDirectMediaUrl(raw: String): Boolean = MediaUrlValidator.isSupported(raw)
 private fun parseItem(raw: String): VideoItem? {
     val parts = raw.split("|", limit = 2)
     return if (parts.size == 2 && isSupportedDirectMediaUrl(parts[1])) VideoItem(parts[0], parts[1]) else null
