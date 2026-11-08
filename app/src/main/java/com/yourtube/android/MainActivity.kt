@@ -4,6 +4,7 @@ import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.os.Build
 import android.os.Environment
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -55,7 +56,7 @@ private fun YourTubeApp() {
     var playingTitle by remember { mutableStateOf("") }
     var playingUrl by remember { mutableStateOf("") }
     var wifiOnly by remember { mutableStateOf(prefs.getBoolean("wifi_only", true)) }
-    var history by remember { mutableStateOf(prefs.getString("history", "").orEmpty().split("\n").filter(String::isNotBlank)) }
+    var history by remember { mutableStateOf(prefs.getString("history", "").orEmpty().split("\n").filter { it.isNotBlank() }) }
     var playlist by remember { mutableStateOf(prefs.getString("playlist", "").orEmpty().split("\n").filter(String::isNotBlank)) }
     var downloadIds by remember { mutableStateOf(prefs.getString("downloads", "").orEmpty().split(",").filter(String::isNotBlank)) }
 
@@ -71,13 +72,17 @@ private fun YourTubeApp() {
         try {
             val parsed = Uri.parse(url)
             require(parsed.scheme == "https" || parsed.scheme == "http") { "Enter a direct HTTP/HTTPS media URL." }
+            val extension = parsed.lastPathSegment.orEmpty().substringAfterLast('.', "").lowercase()
+            require(extension in setOf("mp4", "m4v", "webm")) {
+                "Download Manager supports direct MP4/M4V/WebM files here. HLS playlists need a separate segmented-download implementation."
+            }
             val request = DownloadManager.Request(parsed)
                 .setTitle(title.ifBlank { "YourTube media" })
-                .setDescription("Authorized media download")
+                .setDescription("Authorized direct media download")
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                .setAllowedOverMetered(!wifiOnly)
+                .also { req -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) req.setAllowedOverMetered(!wifiOnly) }
                 .setAllowedOverRoaming(false)
-                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "YourTube_" + System.currentTimeMillis() + ".mp4")
+                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "YourTube_" + System.currentTimeMillis() + "." + extension)
             val id = (ctx.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
             downloadIds = (downloadIds + id.toString()).takeLast(100)
             prefs.edit().putString("downloads", downloadIds.joinToString(",")).apply()
