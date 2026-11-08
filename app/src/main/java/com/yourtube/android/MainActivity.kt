@@ -61,12 +61,18 @@ private fun YourTubeApp() {
     var downloadIds by remember { mutableStateOf(prefs.getString("downloads", "").orEmpty().split(",").filter(String::isNotBlank)) }
 
     fun play(t: String, u: String) {
+        if (!isSupportedDirectMediaUrl(u)) {
+            Toast.makeText(ctx, "This is not a direct media stream. YouTube watch links need the official YouTube integration, which is not configured yet.", Toast.LENGTH_LONG).show()
+            return
+        }
         playingTitle = t
         playingUrl = u
+        page = "Player"
+    }
+    fun recordPlayback(t: String, u: String) {
         val row = "$t|$u"
         history = (listOf(row) + history.filterNot { it == row }).take(100)
         prefs.edit().putString("history", history.joinToString("\n")).apply()
-        page = "Player"
     }
     fun download() {
         try {
@@ -153,7 +159,7 @@ private fun YourTubeApp() {
                         ListItem(headlineContent = { Text("Wi-Fi only downloads") }, supportingContent = { Text("Avoid mobile data for downloads") }, trailingContent = { Switch(wifiOnly, { wifiOnly = it; prefs.edit().putBoolean("wifi_only", it).apply() }) }, colors = ListItemDefaults.colors(containerColor = BG))
                         Text("Playback quality depends on the original stream and device. Background playback, SponsorBlock and automatic intro skipping still need their dedicated service/API implementation.", color = MUTED, modifier = Modifier.padding(16.dp))
                     }
-                    "Player" -> Player(playingTitle, playingUrl) { page = "Home" }
+                    "Player" -> Player(playingTitle, playingUrl, onPlaybackStarted = { recordPlayback(playingTitle, playingUrl) }) { page = "Home" }
                 }
             }
         }
@@ -161,12 +167,23 @@ private fun YourTubeApp() {
 }
 
 @Composable
-private fun Player(title: String, url: String, back: () -> Unit) {
+private fun Player(title: String, url: String, onPlaybackStarted: () -> Unit, back: () -> Unit) {
     val ctx = LocalContext.current
     val player = remember(url) {
         ExoPlayer.Builder(ctx).build().apply { setMediaItem(MediaItem.fromUri(url)); prepare(); playWhenReady = true }
     }
-    DisposableEffect(player) { onDispose { player.release() } }
+    DisposableEffect(player, onPlaybackStarted) {
+        val listener = object : androidx.media3.common.Player.Listener {
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                if (isPlaying) onPlaybackStarted()
+            }
+        }
+        player.addListener(listener)
+        onDispose {
+            player.removeListener(listener)
+            player.release()
+        }
+    }
     Column(Modifier.fillMaxSize()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = back) { Icon(Icons.Default.ArrowBack, "Back") }
@@ -237,7 +254,17 @@ private fun Empty(title: String, message: String) {
         Text(message, color = MUTED, fontSize = 12.sp)
     }
 }
+private fun isSupportedDirectMediaUrl(raw: String): Boolean {
+    return try {
+        val uri = Uri.parse(raw.trim())
+        val extension = uri.lastPathSegment.orEmpty().substringAfterLast('.', "").lowercase()
+        (uri.scheme == "https" || uri.scheme == "http") &&
+            extension in setOf("mp4", "m4v", "webm", "m3u8", "mpd")
+    } catch (_: Exception) {
+        false
+    }
+}
 private fun parseItem(raw: String): VideoItem? {
     val parts = raw.split("|", limit = 2)
-    return if (parts.size == 2 && parts[1].isNotBlank()) VideoItem(parts[0], parts[1]) else null
+    return if (parts.size == 2 && isSupportedDirectMediaUrl(parts[1])) VideoItem(parts[0], parts[1]) else null
 }
