@@ -1,44 +1,24 @@
-# YourTube Android
+# YourTube
 
-Product decisions, target architecture, performance guardrails, and the phased implementation plan are documented in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+YourTube is being redirected into a ReVanced-style Android patch manager, based on the upstream ReVanced Manager / ReVanced Patcher project.
 
-Kotlin + Jetpack Compose Android app using AndroidX Media3.
+**Important:** the current repository is still the earlier standalone video-player prototype. It is not yet a working APK patch manager and must not be installed or described as one.
 
-## Build verification
+## Target functionality
+- Select a compatible APK supplied by the user.
+- Load and display available patch bundles and compatibility information.
+- Select patches and supported patch options.
+- Patch locally, sign the resulting APK, and install or export it through Android's package installer.
+- Use upstream-supported GmsCore integration for Google account sign-in where applicable. Never request or store a Google password.
+- Verify patch provenance and preserve upstream security checks.
 
-A GitHub Actions workflow builds the debug APK on pushes, pull requests, and manual dispatch:
-- Workflow: `.github/workflows/android-build.yml`
-- JDK: 17
-- Gradle: 8.9
-- Android Gradle Plugin: 8.7.3
-- Compile SDK: 35
+## Upstream project and licensing
+The implementation is intended to build on [ReVanced Manager](https://github.com/ReVanced/revanced-manager) and [ReVanced CLI](https://github.com/ReVanced/revanced-cli). Both are GPL-3.0 projects. Any copied or modified GPL-covered code must retain notices and comply with GPL-3.0, including providing corresponding source and build instructions.
 
-Build locally with JDK 17, Android SDK 35, and Gradle 8.9:
+YourTube is an independent project and is not affiliated with or endorsed by Google, YouTube, or the ReVanced team.
 
-```bash
-gradle --no-daemon assembleDebug
-```
+## APK sourcing
+YourTube will not bundle or redistribute the proprietary YouTube APK. The user must provide a compatible APK or use an upstream-supported lawful downloader source. Patch compatibility depends on the selected upstream patch bundle and app version.
 
-Output: `app/build/outputs/apk/debug/app-debug.apk`.
-
-## Implemented in this repository
-
-- Dark Compose interface with Home, Shorts, Subscriptions, Downloads, You, Settings, History, Playlist, and Player screens.
-- Media3 playback for direct HTTP(S) media URLs supported by the device.
-- Local watch history and saved URL playlist.
-- Android DownloadManager for authorized direct MP4, M4V, and WebM file URLs.
-- Wi-Fi-only download preference.
-
-## Not implemented yet
-
-- YouTube Data API feed/search and subscription synchronization.
-- Google OAuth sign-in.
-- Background playback service / media notification controls.
-- Mini-player, SponsorBlock, and automatic intro skipping.
-- HLS segmented downloads, in-app pause/resume, batch queue, and quality/audio-only selection.
-
-These are deliberately not represented as working features until their complete implementations and tests exist.
-
-## Platform and rights
-
-The app does not bypass DRM, access controls, or copyright restrictions. Use media URLs you are authorized to play or download. YouTube account data requires the appropriate official API scopes and OAuth consent configuration.
+## Current status
+The migration is not complete. The existing Compose/Media3 player prototype is legacy code; no APK patching capability is claimed until the manager codebase has been migrated and verified with a successful build and end-to-end patch test.
