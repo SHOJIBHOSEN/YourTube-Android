@@ -11,6 +11,7 @@
 - The previous standalone Media3 player is not the product target and must not be presented as a ReVanced replacement.
 - Prefer integrating or maintaining a clearly attributed GPL-3.0-compatible fork of the upstream ReVanced Manager rather than reimplementing its patching engine.
 - The manager must let the user select a locally obtained, compatible APK, inspect available patches, choose patch options, patch locally, sign the output, and install/export it using Android's supported package installer flow.
+- Include separate target choices for standard YouTube and YouTube Go in the app-selection UI. YouTube Go must be marked unsupported/disabled unless the selected upstream patch bundle explicitly declares a compatible package name and version; never attempt to apply standard YouTube patches to YouTube Go by assumption.
 - Do not bundle, redistribute, or silently download copyrighted YouTube APKs. The user supplies the APK or uses a lawful, upstream-supported downloader source; compatibility is determined by the selected patch bundle.
 - GmsCore support and Google sign-in must come from the upstream supported integration; never collect Google passwords.
 - Preserve upstream copyright notices, GPL-3.0 license obligations, source/build instructions, and clear disclosure that YourTube is an independent fork and is not endorsed by Google or YouTube.
@@ -124,3 +125,5 @@ The latest watch-history correction records an item only after Media3 reports pl
 - Direction approved by the user on 2026-11-08.
 - Repository code has not yet been migrated to the ReVanced Manager codebase. Existing standalone-client code is legacy and must not be represented as a working patch manager.
 - Completion requires a reproducible build, patch list loading, APK selection, patch execution, signing, install/export, GmsCore-compatible login flow where supported, and regression tests on the target Android device.
+
+- YouTube Go is a requested target choice. It must be shown as compatibility-gated and enabled only when a selected patch set explicitly supports its package/version; current upstream YouTube patch compatibility must not be assumed to include YouTube Go.
