@@ -115,6 +115,19 @@
 - Keep logs free of access tokens, private URLs, and personal account data.
 - Prefer stable functionality over adding several untested features in one change.
 
+
+## Low-RAM, battery, and smoothness requirements (user-mandated)
+- Treat low memory use, low battery consumption, and smooth UI as release requirements—not optional polish.
+- Keep the app lightweight at idle: no persistent polling, background scanning, telemetry loops, or foreground service unless the user starts an operation that requires it.
+- Run APK inspection, patching, signing, hashing, and file I/O on bounded background workers; never block the UI thread.
+- Use a bounded task queue and configurable worker concurrency. Avoid loading entire APKs or large dex/resource payloads into duplicate in-memory buffers; stream files where the upstream patching APIs permit it.
+- Release temporary APKs, patch intermediates, streams, and worker resources promptly; clean abandoned temporary files safely.
+- Keep Compose screens simple and lifecycle-aware. Avoid unnecessary recomposition, large animations, expensive blur/shadow effects, and eager rendering of patch details.
+- Load patch metadata only when needed, cache it with a strict size/age limit, and avoid repeated network checks. Provide a manual refresh and sensible refresh intervals.
+- Do not keep CPU-intensive work alive after the user leaves or cancels an operation. Support cancellation and report progress without high-frequency UI updates.
+- Do not promise a specific RAM or battery figure until measured. Profile cold start, idle drain, APK selection, patching, and scrolling on low-end Android hardware; record peak memory, CPU time, and battery impact.
+- Release gate: no avoidable main-thread disk/network work, no unbounded queues/caches, no persistent background activity while idle, and no reproducible UI jank or memory leak in the supported test scenarios.
+
 ## Current repository baseline (2026-11-08)
 The repository currently contains a single Compose activity with a direct Media3 player, Android DownloadManager integration for direct MP4/M4V/WebM links, and local SharedPreferences history/playlist. Several screens are placeholders. YouTube OAuth/API integration, official YouTube playback, real Shorts feed, background service, mini-player, segmented downloads, and SponsorBlock are not yet implemented.
 
