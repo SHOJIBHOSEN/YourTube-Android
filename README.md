@@ -1,22 +1,42 @@
 # YourTube Android
 
-An Android video-app project using Kotlin, Jetpack Compose and AndroidX Media3.
+Kotlin + Jetpack Compose Android app using AndroidX Media3.
 
-## Current status
-This is the initial project scaffold and UI foundation. It is not yet a complete video client:
-- Home, Shorts, Subscriptions, Downloads and account placeholder navigation
-- Dark interface foundation
-- AndroidX Media3 dependencies added for the playback implementation phase
-- Codemagic debug APK workflow
+## Build verification
 
-## Build
-Open the project in Android Studio with JDK 17 and Android SDK 35, or run:
+A GitHub Actions workflow builds the debug APK on pushes, pull requests, and manual dispatch:
+- Workflow: `.github/workflows/android-build.yml`
+- JDK: 17
+- Gradle: 8.9
+- Android Gradle Plugin: 8.7.3
+- Compile SDK: 35
+
+Build locally with JDK 17, Android SDK 35, and Gradle 8.9:
 
 ```bash
-gradle assembleDebug
+gradle --no-daemon assembleDebug
 ```
 
-The APK is generated at `app/build/outputs/apk/debug/app-debug.apk`.
+Output: `app/build/outputs/apk/debug/app-debug.apk`.
 
-## Important
-A working playback source, account integration, download provider, and real feeds still need to be implemented. This project does not bypass platform access controls or copyright restrictions.
+## Implemented in this repository
+
+- Dark Compose interface with Home, Shorts, Subscriptions, Downloads, You, Settings, History, Playlist, and Player screens.
+- Media3 playback for direct HTTP(S) media URLs supported by the device.
+- Local watch history and saved URL playlist.
+- Android DownloadManager for authorized direct MP4, M4V, and WebM file URLs.
+- Wi-Fi-only download preference.
+
+## Not implemented yet
+
+- YouTube Data API feed/search and subscription synchronization.
+- Google OAuth sign-in.
+- Background playback service / media notification controls.
+- Mini-player, SponsorBlock, and automatic intro skipping.
+- HLS segmented downloads, in-app pause/resume, batch queue, and quality/audio-only selection.
+
+These are deliberately not represented as working features until their complete implementations and tests exist.
+
+## Platform and rights
+
+The app does not bypass DRM, access controls, or copyright restrictions. Use media URLs you are authorized to play or download. YouTube account data requires the appropriate official API scopes and OAuth consent configuration.
