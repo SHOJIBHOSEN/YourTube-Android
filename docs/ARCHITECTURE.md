@@ -140,3 +140,13 @@ The latest watch-history correction records an item only after Media3 reports pl
 - Completion requires a reproducible build, patch list loading, APK selection, patch execution, signing, install/export, GmsCore-compatible login flow where supported, and regression tests on the target Android device.
 
 - YouTube Go is a requested target choice. It must be shown as compatibility-gated and enabled only when a selected patch set explicitly supports its package/version; current upstream YouTube patch compatibility must not be assumed to include YouTube Go.
+
+
+## Definition of done and handoff policy
+- Do not deliver an APK or describe the product as complete while any agreed core feature, required integration, build, or acceptance test is missing or failing.
+- A feature is complete only when implemented, connected to the real workflow, tested, and its success/failure states are handled. Placeholder screens, mock data, inert buttons, and documentation-only implementations do not count.
+- Required end-to-end flow: select a user-provided APK; identify package/version; load and validate a compatible patch bundle; display patch information/options; apply selected patches; sign the output; verify output; install through Android's package installer or export it; handle cancellation, errors, storage limits, and unsupported versions.
+- YouTube Go remains visible as a separate target choice but cannot be advertised as working unless a real compatible patch bundle and end-to-end tests prove support.
+- Required quality checks: reproducible clean build; automated unit/integration tests; supported-device installation and smoke tests; no unresolved crashes or critical defects; low-RAM/battery profiling; accessibility and lifecycle checks; GPL/source attribution and release documentation.
+- Maintain a release checklist with each requirement marked implemented, tested, and verified, including test evidence. No silent omissions and no claim of completion based only on source edits or a successful compile.
+- If an upstream dependency or YouTube Go compatibility is unavailable, disclose that limitation plainly; do not fake support or substitute a nonfunctional placeholder.
