@@ -2,13 +2,18 @@ workflows:
   yourtube-android:
     name: YourTube Android Debug
     max_build_duration: 60
-    instance_type: linux
+    # Personal free plans include macOS M2 minutes; Linux instances require billing.
+    instance_type: mac_mini_m2
     environment:
       java: 17
     scripts:
-      - name: Check Gradle
-        script: gradle --version
+      - name: Check build tools
+        script: |
+          java -version
+          gradle --version
       - name: Build debug APK
-        script: gradle --no-daemon --stacktrace assembleDebug
+        script: |
+          gradle --no-daemon --stacktrace assembleDebug
+          test -f app/build/outputs/apk/debug/app-debug.apk
     artifacts:
       - app/build/outputs/apk/debug/*.apk
