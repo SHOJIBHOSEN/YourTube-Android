@@ -4,6 +4,7 @@ import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.os.Build
 import android.os.Environment
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -58,7 +59,7 @@ private val sampleVideos = listOf(
     Video("Elephant Dream", "Blender Foundation", "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", "10:53", "Animation", "Open movie sample • direct MP4 playback"),
     Video("For Bigger Joyrides", "Google Demo", "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4", "0:15", "Technology", "Short sample clip • direct MP4 playback"),
     Video("For Bigger Escapes", "Google Demo", "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", "0:15", "Travel", "Short sample clip • direct MP4 playback"),
-    Video("Sintel Trailer", "Blender Foundation", "https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4", "2:。", "Animation", "Open movie sample • direct MP4 playback"),
+    Video("Sintel Trailer", "Blender Foundation", "https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4", "2:00", "Animation", "Open movie sample • direct MP4 playback"),
     Video("Tears of Steel", "Blender Foundation", "https://storage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4", "12:14", "Sci-Fi", "Open movie sample • direct MP4 playback")
 )
 
@@ -108,7 +109,7 @@ private fun YourTubeApp() {
             val request = DownloadManager.Request(uri).setTitle(video.title)
                 .setDescription("YourTube • authorized direct media")
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                .setAllowedOverMetered(!wifiOnly).setAllowedOverRoaming(false)
+                .setAllowedOverRoaming(false).also { request -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) request.setAllowedOverMetered(!wifiOnly) }
                 .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "YourTube_${System.currentTimeMillis()}.$ext")
             val id = (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
             downloads = (downloads + id.toString()).takeLast(100)
