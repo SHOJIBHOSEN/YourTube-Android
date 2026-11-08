@@ -1,6 +1,7 @@
 package com.yourtube.android.core.media
 
-import android.net.Uri
+import java.net.URI
+import java.util.Locale
 
 /**
  * Conservative classifier for user-authorized direct media URLs.
@@ -13,15 +14,16 @@ object MediaUrlValidator {
         val value = raw.trim()
         if (value.isEmpty()) return false
         return try {
-            val uri = Uri.parse(value)
-            val scheme = uri.scheme?.lowercase()
+            val uri = URI(value)
+            val scheme = uri.scheme?.lowercase(Locale.ROOT)
             if (scheme != "http" && scheme != "https") return false
-            val host = uri.host?.lowercase() ?: return false
+            val host = uri.host?.lowercase(Locale.ROOT) ?: return false
             if (host == "youtube.com" || host.endsWith(".youtube.com") ||
                 host == "youtu.be" || host.endsWith(".youtu.be")) return false
-            val extension = uri.lastPathSegment.orEmpty()
+            val path = uri.path.orEmpty()
+            val extension = path.substringAfterLast('/', "")
                 .substringAfterLast('.', "")
-                .lowercase()
+                .lowercase(Locale.ROOT)
             extension in supportedExtensions
         } catch (_: Exception) {
             false
