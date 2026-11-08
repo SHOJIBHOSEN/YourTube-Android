@@ -1,5 +1,7 @@
 # YourTube Android
 
+Product decisions, target architecture, performance guardrails, and the phased implementation plan are documented in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 Kotlin + Jetpack Compose Android app using AndroidX Media3.
 
 ## Build verification
