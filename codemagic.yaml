@@ -6,14 +6,9 @@ workflows:
     environment:
       java: 17
     scripts:
+      - name: Check Gradle
+        script: gradle --version
       - name: Build debug APK
-        script: |
-          chmod +x ./gradlew 2>/dev/null || true
-          if [ -f ./gradlew ]; then
-            ./gradlew --no-daemon assembleDebug
-          else
-            gradle --no-daemon assembleDebug
-          fi
+        script: gradle --no-daemon --stacktrace assembleDebug
     artifacts:
-      - app/build/outputs/**/*.apk
-      - app/build/outputs/**/*.aab
+      - app/build/outputs/apk/debug/*.apk
