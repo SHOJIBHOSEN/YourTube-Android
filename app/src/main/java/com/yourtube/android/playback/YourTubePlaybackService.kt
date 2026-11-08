@@ -22,11 +22,9 @@ class YourTubePlaybackService : MediaSessionService() {
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
 
     override fun onDestroy() {
-        mediaSession?.run {
-            player.release()
-            release()
-        }
+        mediaSession?.release()
         mediaSession = null
+        player?.release()
         player = null
         super.onDestroy()
     }
